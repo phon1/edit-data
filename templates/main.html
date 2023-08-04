@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Sample Data</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <header>
+        <div class="user-info">
+            {% if logged_in %}
+                <p>Hello user, {{ phone_number }}</p>
+            {% endif %}
+        </div>
+        <div class="logout-btn">
+            {% if logged_in %}
+                <a href="{{ url_for('logout') }}">Log out</a>
+            {% endif %}
+        </div>
+    </header>
+    <h1>Random Sample Data</h1>
+    <form method="post" action="/">
+        <div class="container">
+            <div class="main-column">
+                <div class="label-row">
+                    <div class="label-left">
+                        <label for="id">ID:</label>
+                        <input type="text" id="id" name="id" value="{{ sample.id }}" readonly>
+                    </div>
+                    <div class="label-right">
+                        <label for="message_id">Message ID:</label>
+                        <input type="text" id="message_id" name="message_id" value="{{ sample.message_id }}" readonly>
+                    </div>
+                    <div class="label-right">
+                        <label for="status">Status:</label>
+                        <input type="text" id="status" name="status" value="{{ sample.status }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="label-row">
+                    <div class="label-left">
+                        <label for="instruction">Instruction:</label>
+                        <textarea type="text" id="instruction" name="instruction" readonly>{{ sample.instruction }}</textarea>
+                    </div>
+                    <div class="label-right">
+                        <label for="instruction_vi">Instruction (Vietnamese):</label>
+                        <textarea type="text" id="instruction_vi" name="instruction_vi">{{ sample.instruction_vi }}</textarea>
+                    </div>
+                </div>
+
+                <div class="label-row">
+                    <div class="label-left">
+                        <label for="input">Input:</label>
+                        <textarea id="input" name="input" rows="4" readonly>{{ sample.input }}</textarea>
+                    </div>
+                    <div class="label-right">
+                        <label for="input_vi">Input (Vietnamese):</label>
+                        <textarea id="input_vi" name="input_vi" rows="4">{{ sample.input_vi }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="label-row">
+                    <div class="label-left">
+                        <label for="output">Output:</label>
+                        <textarea id="output" name="output" rows="4" readonly>{{ sample.output }}</textarea>
+                    </div>
+                    <div class="label-right">
+                        <label for="output_vi">Output (Vietnamese):</label>
+                        <textarea id="output_vi" name="output_vi" rows="4">{{ sample.output_vi }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="submit" value="Save">
+    </form>
+</body>
+</html>

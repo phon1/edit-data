@@ -1,0 +1,276 @@
+phần code có sơ đồ như sau
+Edit_data
+>static
+    login.css
+    style.css
+>templates
+    index.html
+    login.html
+app.py
+
+from flask import Flask, render_template, request
+from sqlalchemy import create_engine, text
+import random
+
+# Tạo ứng dụng Flask
+app = Flask(__name__)
+
+# Kết nối cơ sở dữ liệu PostgreSQL
+engine = create_engine(
+    "postgresql://kami:123@192.168.1.200:5432/phongdev"
+)
+
+# Hàm lấy ngẫu nhiên một mẫu từ bảng instruction_dataset
+def get_random_sample():
+    query = text("SELECT * FROM instruction_dataset TABLESAMPLE BERNOULLI(1) LIMIT 1;")
+    with engine.connect() as conn:  # Mở kết nối đến cơ sở dữ liệu
+        result = conn.execute(query)  # Thực thi câu truy vấn
+        return result.fetchone()
+
+# Hàm cập nhật dữ liệu vào cơ sở dữ liệu
+def update_sample_data(sample_id, instruction_vi, input_vi, output_vi):
+    with engine.connect() as conn:  # Mở kết nối đến cơ sở dữ liệu
+        query = text("UPDATE instruction_dataset SET instruction_vi=:insv, input_vi=:inpv, output_vi=:outv WHERE id=:id;")
+        conn.execute(query, insv=instruction_vi, inpv=input_vi, outv=output_vi, id=sample_id)
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        # Xử lý khi bấm nút "Save"
+        # Lấy dữ liệu từ form và cập nhật vào cơ sở dữ liệu
+
+        instruction_vi = request.form["instruction_vi"]
+        input_vi = request.form["input_vi"]
+        output_vi = request.form["output_vi"]
+
+        # Lấy ID từ form (cần để cập nhật dữ liệu cho mẫu cụ thể)
+        sample_id = int(request.form["id"])
+
+        # Thực hiện câu truy vấn cập nhật vào cơ sở dữ liệu
+        update_sample_data(sample_id, instruction_vi, input_vi, output_vi)
+
+    # Lấy một mẫu ngẫu nhiên từ cơ sở dữ liệu
+    sample = get_random_sample()
+
+    # Render template và truyền dữ liệu để hiển thị trên giao diện web
+    return render_template("index.html", sample=sample)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+app.py
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Sample Data</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Random Sample Data</h1>
+    <form method="post" action="/">
+        <div class="container">
+            <div class="main-column">
+                <div class="label-row">
+                    <div class="label-left">
+                        <label for="id">ID:</label>
+                        <input type="text" id="id" name="id" value="{{ sample.id }}" readonly>
+                    </div>
+                    <div class="label-right">
+                        <label for="message_id">Message ID:</label>
+                        <input type="text" id="message_id" name="message_id" value="{{ sample.message_id }}" readonly>
+                    </div>
+                    <div class="label-right">
+                        <label for="status">Status:</label>
+                        <input type="text" id="status" name="status" value="{{ sample.status }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="label-row">
+                    <div class="label-left">
+                        <label for="instruction">Instruction:</label>
+                        <textarea type="text" id="instruction" name="instruction" readonly>{{ sample.instruction }}</textarea>
+                    </div>
+                    <div class="label-right">
+                        <label for="instruction_vi">Instruction (Vietnamese):</label>
+                        <textarea type="text" id="instruction_vi" name="instruction_vi">{{ sample.instruction_vi }}</textarea>
+                    </div>
+                </div>
+
+                <div class="label-row">
+                    <div class="label-left">
+                        <label for="input">Input:</label>
+                        <textarea id="input" name="input" rows="4" readonly>{{ sample.input }}</textarea>
+                    </div>
+                    <div class="label-right">
+                        <label for="input_vi">Input (Vietnamese):</label>
+                        <textarea id="input_vi" name="input_vi" rows="4">{{ sample.input_vi }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="label-row">
+                    <div class="label-left">
+                        <label for="output">Output:</label>
+                        <textarea id="output" name="output" rows="4" readonly>{{ sample.output }}</textarea>
+                    </div>
+                    <div class="label-right">
+                        <label for="output_vi">Output (Vietnamese):</label>
+                        <textarea id="output_vi" name="output_vi" rows="4">{{ sample.output_vi }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="submit" value="Save">
+    </form>
+</body>
+</html>
+index.html
+
+/* Global styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    color: #007BFF;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+/* Left and Right column styles */
+.main-column {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.label-left {
+    flex: 1;
+    color: #007BFF;
+    font-weight: bold;
+}
+
+.label-right {
+    flex: 1;
+    color: #007BFF;
+    font-weight: bold;
+    margin-left: 20px;
+}
+
+/* Input and textarea styles */
+textarea,
+input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow-wrap: break-word;
+}
+
+textarea[readonly],
+input[type="text"][readonly] {
+    background-color: #f2f2f2;
+    border-color: #f2f2f2;
+    color: #000;
+    cursor: default;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Output box styles */
+#output,
+#output_vi {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    overflow-wrap: break-word;
+}
+
+/* Save button styles */
+input[type="submit"] {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+input[type="submit"]:focus {
+    outline: none;
+}
+
+input[type="submit"]:active {
+    background-color: #004080;
+}
+
+/* Additional styles */
+/* Add padding between the main content and label row */
+.label-row {
+    padding: 10px;
+}
+
+/* Add margin between the main columns */
+.main-column {
+    margin-right: 20px;
+}
+
+/* Make textarea fixed by disabling resizing */
+textarea {
+    resize: none;
+}
+style.css
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">  <!-- Thêm dòng này để liên kết đến file CSS -->
+</head>
+<body>
+    <div class="login-form">
+        <h1>Login Page</h1>
+        <form method="POST">
+            <label for="phoneNumber">Phone Number:</label>
+            <input type="text" id="phoneNumber" name="phoneNumber">
+            <br>
+            {% if error %}
+                <span class="error">{{ error }}</span>
+                <br>
+            {% endif %}
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+</html>
+login.html
+
+từ app.py viết thêm hàm để trỏ đến login.html đầu tiên để yêu cầu login khi chạy app
+sau khi login thành công thì trỏ lại đến index.html

@@ -20,18 +20,18 @@ def get_random_sample():
     global phone_number
 
     with engine.connect() as conn:
-        query = text("SELECT * FROM instruction_dataset WHERE status = :status LIMIT 1;")
+        query = text("SELECT * FROM instruction_dataset_mt WHERE status = :status LIMIT 1;")
         result = conn.execute(query, status=f"{phone_number} repairing").fetchone()
 
         if result:
             return result
         else:
-            query = text("SELECT * FROM instruction_dataset TABLESAMPLE BERNOULLI(1) LIMIT 1;")
+            query = text("SELECT * FROM instruction_dataset_mt TABLESAMPLE BERNOULLI(1) LIMIT 1;")
             result = conn.execute(query).fetchone()
 
             if result:
                 sample_id = result.id
-                update_status_query = text("UPDATE instruction_dataset SET status = :status WHERE id = :id;")
+                update_status_query = text("UPDATE instruction_dataset_mt SET status = :status WHERE id = :id;")
                 conn.execute(update_status_query, status=f"{phone_number} repairing", id=sample_id)
 
             return result
@@ -39,7 +39,7 @@ def get_random_sample():
 
 def update_sample_data(sample_id, instruction_vi, input_vi, output_vi):
     with engine.connect() as conn:
-        query = text("UPDATE instruction_dataset SET instruction_vi=:insv, input_vi=:inpv, output_vi=:outv, status=:status WHERE id=:id;")
+        query = text("UPDATE instruction_dataset_mt SET instruction_vi=:insv, input_vi=:inpv, output_vi=:outv, status=:status WHERE id=:id;")
         if not instruction_vi:
             instruction_vi = ""  # Cung cấp giá trị mặc định nếu instruction_vi rỗng
         if not input_vi:
@@ -61,7 +61,7 @@ def log():
         return redirect(url_for('login'))
 
     with engine.connect() as conn:
-        query = text("SELECT * FROM instruction_dataset WHERE status LIKE :status;")
+        query = text("SELECT * FROM instruction_dataset_mt WHERE status LIKE :status;")
         logs = conn.execute(query, status="%submited%").fetchall()
 
     return render_template("log.html", logs=logs, logged_in=logged_in, phone_number=phone_number)

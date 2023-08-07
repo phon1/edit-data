@@ -4,10 +4,19 @@ import random
 
 app = Flask(__name__)
 
+app.config['POSTGRES_USER'] = 'kami'
+app.config['POSTGRES_PASSWORD'] = '123'
+app.config['POSTGRES_HOST'] = '192.168.1.200'
+app.config['POSTGRES_PORT'] = '5432'
+app.config['POSTGRES_DB'] = 'phongdev'
+
 # Kết nối cơ sở dữ liệu PostgreSQL
-engine = create_engine(
-    "postgresql://kami:123@192.168.1.200:5432/phongdev"
-)
+engine = create_engine(f"postgresql://{app.config['POSTGRES_USER']}:{app.config['POSTGRES_PASSWORD']}@{app.config['POSTGRES_HOST']}:{app.config['POSTGRES_PORT']}/{app.config['POSTGRES_DB']}")
+
+# # Kết nối cơ sở dữ liệu PostgreSQL
+# engine = create_engine(
+#     "postgresql://kami:123@192.168.1.200:5432/phongdev"
+# )
 
 # Hàm lấy ngẫu nhiên một mẫu từ bảng instruction_dataset
 def get_random_sample():

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Log Data</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='log.css') }}">
+</head>
+
+<body>
+    <header>
+        <div class="user-info">
+            {% if logged_in %}
+            <p>Hello user, {{ phone_number }}</p>
+            {% endif %}
+        </div>
+        <div class="logout-btn">
+            {% if logged_in %}
+            <a href="{{ url_for('logout') }}">Log out</a>
+            {% endif %}
+        </div>
+    </header>
+    <h1>Log Data</h1>
+    <table>
+        <tr>
+            <th>STT</th>
+            <th>ID</th>
+            <th>Message ID</th>
+            <th>Status</th>
+            <th>Instruction</th>
+            <th>Input</th>
+            <th>Output</th>
+            <th>Instruction (Vietnamese)</th>
+            <th>Input (Vietnamese)</th>
+            <th>Output (Vietnamese)</th>
+            <th>Edit</th>
+        </tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ log.id }}</td>
+            <td>{{ log.message_id }}</td>
+            <td>{{ log.status }}</td>
+            <td>
+                <textarea id="instruction_{{ log.id }}" name="instruction">{{ log.instruction }}</textarea>
+            </td>
+            <td>
+                <textarea id="input_{{ log.id }}" name="input">{{ log.input }}</textarea>
+            </td>
+            <td>
+                <textarea id="output_{{ log.id }}" name="output">{{ log.output }}</textarea>
+            </td>
+            <td>
+                <textarea id="instruction_vi_{{ log.id }}" name="instruction_vi"
+                    rows="4">{{ log.instruction_vi }}</textarea>
+            </td>
+            <td>
+                <textarea id="input_vi_{{ log.id }}" name="input_vi" rows="4">{{ log.input_vi }}</textarea>
+            </td>
+            <td>
+                <textarea id="output_vi_{{ log.id }}" name="output_vi" rows="4">{{ log.output_vi }}</textarea>
+            </td>
+            <td>
+                <button onclick="saveEdit('{{ log.id }}')">Save</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="back-btn">
+        <a href="{{ url_for('main') }}">Back to Main</a>
+    </div>
+
+<script>
+    function saveEdit(id) {
+        var instruction = document.getElementById("instruction_" + id).value;
+        var input = document.getElementById("input_" + id).value;
+        var output = document.getElementById("output_" + id).value;
+        var instruction_vi = document.getElementById("instruction_vi_" + id).value;
+        var input_vi = document.getElementById("input_vi_" + id).value;
+        var output_vi = document.getElementById("output_vi_" + id).value;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/edit_log/" + id, true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Reload the page after saving the edit
+                window.location.reload();
+            }
+        };
+        var data = "instruction=" + encodeURIComponent(instruction) +
+            "&input=" + encodeURIComponent(input) +
+            "&output=" + encodeURIComponent(output) +
+            "&instruction_vi=" + encodeURIComponent(instruction_vi) +
+            "&input_vi=" + encodeURIComponent(input_vi) +
+            "&output_vi=" + encodeURIComponent(output_vi);
+
+        // Add the missing parameters here
+        var params = data + "&id=" + encodeURIComponent(id);
+
+        xhr.send(params);
+    }
+</script>
+
+</body>
+
+</html>

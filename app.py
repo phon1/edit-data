@@ -117,14 +117,13 @@ def edit_log(id):
         data_input = request.form.get("input_vi")
         data_output = request.form.get("output_vi")
 
-        if data_instruction and data_input and data_output:
+        if data_instruction is not None or data_input is not None or data_output is not None:
             update_sample_data(id, data_instruction, data_input, data_output)
             return jsonify({"message": "Edit successful!"})
         else:
-            return jsonify({"error": "Missing data fields."}), 400
+            return jsonify({"error": "No data to update."}), 400
 
     return jsonify({"error": "Invalid request."}), 400
-
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -16,7 +16,7 @@ header {
 
 h1 {
     font-size: 24px;
-    margin: 0;
+    margin: 1vh;
     padding: 0;
 }
 
@@ -89,9 +89,8 @@ textarea {
 }
 
 textarea {
-    resize: vertical;
+    resize: none; /* Disable textarea resizing */
     height: 10vh;
-    
 }
 
 button {
@@ -102,7 +101,6 @@ button {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
 }
 
 th, td {
@@ -153,4 +151,32 @@ button {
 
 button:hover {
     background-color: #45a049;
+}
+
+/* Back to Main button styles */
+.back-btn {
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+.back-btn a {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.back-btn a:hover {
+    background-color: #004080;
+}
+
+.back-btn a:focus {
+    outline: none;
+}
+
+.back-btn a:active {
+    background-color: #004080;
 }

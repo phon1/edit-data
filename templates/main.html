@@ -23,6 +23,7 @@
     <form method="post" action="/">
         <div class="container">
             <div class="main-column">
+                {% if sample %}
                 <div class="label-row">
                     <div class="label-left">
                         <label for="id">ID:</label>
@@ -72,10 +73,15 @@
                         <textarea id="output_vi" name="output_vi" rows="4">{{ sample.output_vi }}</textarea>
                     </div>
                 </div>
+                {% else %}
+                <p>No data available</p>
+                {% endif %}
             </div>
         </div>
-        <input type="submit" value="Save">
-        <a href="{{ url_for('log') }}"><button type="button">View Logs</button></a>
+        <div class="action-btn">
+            <button type="submit">Save</button>&nbsp;&nbsp;
+            <a href="{{ url_for('log') }}">View Logs</a>
+        </div>
     </form>
 </body>
 

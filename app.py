@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, text
 
 app = Flask(__name__)
 
+# Cấu hình cơ sở dữ liệu PostgreSQL
 app.config['POSTGRES_USER'] = 'kami'
 app.config['POSTGRES_PASSWORD'] = '123'
 app.config['POSTGRES_HOST'] = '192.168.1.200'
@@ -14,7 +15,7 @@ engine = create_engine(
     f"postgresql://{app.config['POSTGRES_USER']}:{app.config['POSTGRES_PASSWORD']}@{app.config['POSTGRES_HOST']}:{app.config['POSTGRES_PORT']}/{app.config['POSTGRES_DB']}"
 )
 
-
+# Các hàm xử lý dữ liệu
 def get_random_sample():
     global phone_number
 
@@ -36,11 +37,16 @@ def get_random_sample():
             return result
 
 
-def update_sample_data(sample_id, instruction, input_data, output, instruction_vi, input_vi, output_vi):
+def update_sample_data(sample_id, instruction_vi, input_vi, output_vi):
     with engine.connect() as conn:
-        query = text("UPDATE instruction_dataset SET instruction=:ins, input=:inp, output=:out, instruction_vi=:insv, input_vi=:inpv, output_vi=:outv, status=:status WHERE id=:id;")
-        conn.execute(query, ins=instruction, inp=input_data, out=output, insv=instruction_vi, inpv=input_vi, outv=output_vi, status=f"{phone_number} submited", id=sample_id)
-
+        query = text("UPDATE instruction_dataset SET instruction_vi=:insv, input_vi=:inpv, output_vi=:outv, status=:status WHERE id=:id;")
+        if not instruction_vi:
+            instruction_vi = ""  # Cung cấp giá trị mặc định nếu instruction_vi rỗng
+        if not input_vi:
+            input_vi = ""  # Cung cấp giá trị mặc định nếu input_vi rỗng
+        if not output_vi:
+            output_vi = ""  # Cung cấp giá trị mặc định nếu output_vi rỗng
+        conn.execute(query, insv=instruction_vi, inpv=input_vi, outv=output_vi, status=f"{phone_number} submited", id=sample_id)
 
 
 logged_in = False
@@ -107,19 +113,17 @@ def edit_log(id):
     global phone_number
 
     if request.method == "POST":
-        # Handle the data edit here and save it to the database
-        instruction = request.form["instruction"]
-        input_data = request.form["input"]
-        output = request.form["output"]
-        instruction_vi = request.form["instruction_vi"]
-        input_vi = request.form["input_vi"]
-        output_vi = request.form["output_vi"]
+        data_instruction = request.form.get("instruction_vi")
+        data_input = request.form.get("input_vi")
+        data_output = request.form.get("output_vi")
 
-        # Update the data in the database with all required parameters
-        update_sample_data(id, instruction, input_data, output, instruction_vi, input_vi, output_vi)
+        if data_instruction and data_input and data_output:
+            update_sample_data(id, data_instruction, data_input, data_output)
+            return jsonify({"message": "Edit successful!"})
+        else:
+            return jsonify({"error": "Missing data fields."}), 400
 
-    return "Edit successful!"
-
+    return jsonify({"error": "Invalid request."}), 400
 
 
 if __name__ == "__main__":

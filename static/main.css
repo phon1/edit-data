@@ -156,3 +156,32 @@ input[type="submit"]:active {
 textarea {
     resize: none;
 }
+
+
+.action-btn {
+    margin-top: 20px;
+}
+
+.action-btn a, .action-btn button {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 16px;
+}
+
+.action-btn a:hover, .action-btn button:hover {
+    background-color: #004080;
+}
+
+.action-btn a:focus, .action-btn button:focus {
+    outline: none;
+}
+
+.action-btn a:active, .action-btn button:active {
+    background-color: #004080;
+}

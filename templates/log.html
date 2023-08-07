@@ -26,14 +26,11 @@
             <th>ID</th>
             <th>Message ID</th>
             <th>Status</th>
-            <th>Instruction</th>
-            <th>Input</th>
-            <th>Output</th>
-            <th>Instruction (Vietnamese)</th>
-            <th>Input (Vietnamese)</th>
-            <th>Output (Vietnamese)</th>
+            <th>Data</th>
+            <th>Data (Vietnamese)</th>
             <th>Edit</th>
         </tr>
+        {% if logs %}
         {% for log in logs %}
         <tr>
             <td>{{ loop.index }}</td>
@@ -41,67 +38,109 @@
             <td>{{ log.message_id }}</td>
             <td>{{ log.status }}</td>
             <td>
-                <textarea id="instruction_{{ log.id }}" name="instruction">{{ log.instruction }}</textarea>
+                <table>
+                    <tr>
+                        <td>Instruction:</td>
+                        <td><textarea id="data_instruction_{{ log.id }}"
+                                readonly name="data_instruction_{{ log.id }}">{{ log.instruction }}</textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Input:</td>
+                        <td><textarea id="data_input_{{ log.id }}" readonly name="data_input_{{ log.id }}">{{ log.input }}</textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Output:</td>
+                        <td><textarea id="data_output_{{ log.id }}"
+                            readonly name="data_output_{{ log.id }}">{{ log.output }}</textarea></td>
+                    </tr>
+                </table>
             </td>
             <td>
-                <textarea id="input_{{ log.id }}" name="input">{{ log.input }}</textarea>
-            </td>
-            <td>
-                <textarea id="output_{{ log.id }}" name="output">{{ log.output }}</textarea>
-            </td>
-            <td>
-                <textarea id="instruction_vi_{{ log.id }}" name="instruction_vi"
-                    rows="4">{{ log.instruction_vi }}</textarea>
-            </td>
-            <td>
-                <textarea id="input_vi_{{ log.id }}" name="input_vi" rows="4">{{ log.input_vi }}</textarea>
-            </td>
-            <td>
-                <textarea id="output_vi_{{ log.id }}" name="output_vi" rows="4">{{ log.output_vi }}</textarea>
+                <table>
+                    <tr>
+                        <td>Instruction (Vietnamese):</td>
+                        <td><textarea id="data_vi_instruction_{{ log.id }}"
+                                name="instruction_vi">{{ log.instruction_vi }}</textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Input (Vietnamese):</td>
+                        <td><textarea id="data_vi_input_{{ log.id }}"
+                                name="input_vi">{{ log.input_vi }}</textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Output (Vietnamese):</td>
+                        <td><textarea id="data_vi_output_{{ log.id }}"
+                                name="output_vi">{{ log.output_vi }}</textarea></td>
+                    </tr>
+                </table>
             </td>
             <td>
                 <button onclick="saveEdit('{{ log.id }}')">Save</button>
             </td>
         </tr>
         {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="7">No data available</td>
+        </tr>
+        {% endif %}
     </table>
 
     <div class="back-btn">
         <a href="{{ url_for('main') }}">Back to Main</a>
     </div>
 
-<script>
-    function saveEdit(id) {
-        var instruction = document.getElementById("instruction_" + id).value;
-        var input = document.getElementById("input_" + id).value;
-        var output = document.getElementById("output_" + id).value;
-        var instruction_vi = document.getElementById("instruction_vi_" + id).value;
-        var input_vi = document.getElementById("input_vi_" + id).value;
-        var output_vi = document.getElementById("output_vi_" + id).value;
+    <script>
+        function saveEdit(id) {
+            var data_vi_instruction = document.getElementById("data_vi_instruction_" + id).value;
+            var data_vi_input = document.getElementById("data_vi_input_" + id).value;
+            var data_vi_output = document.getElementById("data_vi_output_" + id).value;
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/edit_log/" + id, true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                // Reload the page after saving the edit
-                window.location.reload();
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/edit_log/" + id, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        alert(response.message);
+                    } else {
+                        var response = JSON.parse(xhr.responseText);
+                        alert("Failed to save the edit: " + response.error);
+                    }
+                }
+            };
+
+            // Tạo một đối tượng chứa dữ liệu cần gửi lên server
+            var data = {};
+
+            // Kiểm tra xem data_vi_instruction có thay đổi không, nếu có thì cập nhật vào data
+            if (data_vi_instruction.trim() !== "") {
+                data.instruction_vi = data_vi_instruction;
             }
-        };
-        var data = "instruction=" + encodeURIComponent(instruction) +
-            "&input=" + encodeURIComponent(input) +
-            "&output=" + encodeURIComponent(output) +
-            "&instruction_vi=" + encodeURIComponent(instruction_vi) +
-            "&input_vi=" + encodeURIComponent(input_vi) +
-            "&output_vi=" + encodeURIComponent(output_vi);
 
-        // Add the missing parameters here
-        var params = data + "&id=" + encodeURIComponent(id);
+            // Kiểm tra xem data_vi_input có thay đổi không, nếu có thì cập nhật vào data
+            if (data_vi_input.trim() !== "") {
+                data.input_vi = data_vi_input;
+            }
 
-        xhr.send(params);
-    }
-</script>
+            // Kiểm tra xem data_vi_output có thay đổi không, nếu có thì cập nhật vào data
+            if (data_vi_output.trim() !== "") {
+                data.output_vi = data_vi_output;
+            }
 
+            // Kiểm tra xem data có thay đổi không, nếu có thì gửi yêu cầu POST
+            if (Object.keys(data).length > 0) {
+                // Gửi yêu cầu POST với dữ liệu cần cập nhật
+                var formData = new URLSearchParams(data);
+                xhr.send(formData);
+            } else {
+                // Không có dữ liệu thay đổi, không gửi yêu cầu POST
+                alert("No changes to save.");
+            }
+        }
+    </script>
 </body>
 
 </html>
